@@ -17,7 +17,7 @@ func (m *mockClient) GetRestConfig() *rest.Config {
 func TestRootCmd(t *testing.T) {
 	restcfg = new(mockClient)
 	appFs = afero.NewMemMapFs()
-	RootCmd.SetOutput(new(bytes.Buffer))
+	RootCmd.SetOut(new(bytes.Buffer))
 	RootCmd.SetArgs([]string{
 		"--config",
 		"/dev/null",
@@ -38,6 +38,7 @@ func TestRootCmd(t *testing.T) {
 		"foo=bar,spam=egg",
 		"--resync-interval",
 		"1",
+		"--unabridged",
 	})
 
 	if err := Execute(); err != nil {
@@ -46,7 +47,7 @@ func TestRootCmd(t *testing.T) {
 }
 
 func TestVersionCmd(t *testing.T) {
-	RootCmd.SetOutput(new(bytes.Buffer))
+	RootCmd.SetOut(new(bytes.Buffer))
 	RootCmd.SetArgs([]string{"version"})
 	if err := RootCmd.Execute(); err != nil {
 		t.Errorf("version subcommand shouldn't fail: %+v", err)

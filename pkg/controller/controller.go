@@ -55,6 +55,7 @@ type Factory struct {
 	selector   string
 	resyncIntv time.Duration
 	exclusions *Exclusions
+	unabridged bool
 }
 
 // Controller is a generic kubernetes controller
@@ -69,6 +70,7 @@ type Controller struct {
 	logger     logger
 	resyncIntv time.Duration
 	exclusions *Exclusions
+	unabridged bool
 }
 
 // New return a kubernetes controller using the provided client
@@ -79,6 +81,7 @@ func New(client cache.ListerWatcher,
 	selector string,
 	resync time.Duration,
 	exclusions *Exclusions,
+	unabridged bool,
 ) *Controller {
 
 	lopts := metav1.ListOptions{LabelSelector: selector, ResourceVersion: "0", AllowWatchBookmarks: true}
@@ -132,6 +135,7 @@ func New(client cache.ListerWatcher,
 		logger:     log,
 		resyncIntv: resync,
 		exclusions: exclusions,
+		unabridged: unabridged,
 	}
 }
 
@@ -222,7 +226,9 @@ func (c *Controller) processItem(key string) error {
 
 	// clear irrelevant attributes
 	uc := obj.UnstructuredContent()
-	delete(uc, "status")
+	if !c.unabridged {
+		delete(uc, "status")
+	}
 	md := uc["metadata"].(map[string]interface{})
 	for _, attr := range unexported {
 		delete(md, attr)
@@ -256,16 +262,17 @@ func (c *Controller) enqueue(notif *event.Notification) {
 }
 
 // NewFactory create a controller factory
-func NewFactory(logger logger, selector string, resync int, exclusions *Exclusions) *Factory {
+func NewFactory(logger logger, selector string, resync int, exclusions *Exclusions, unabridged bool) *Factory {
 	return &Factory{
 		logger:     logger,
 		selector:   selector,
 		resyncIntv: time.Duration(resync) * time.Second,
 		exclusions: exclusions,
+		unabridged: unabridged,
 	}
 }
 
 // NewController create a controller.Controller
 func (f *Factory) NewController(client cache.ListerWatcher, notifier event.Notifier, name string) Interface {
-	return New(client, notifier, f.logger, name, f.selector, f.resyncIntv, f.exclusions)
+	return New(client, notifier, f.logger, name, f.selector, f.resyncIntv, f.exclusions, f.unabridged)
 }

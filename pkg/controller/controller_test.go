@@ -162,7 +162,7 @@ func TestController(t *testing.T) {
 		NoOwnerRef: true,
 	}
 
-	f := NewFactory(log, "label1=something", 60, exclusions)
+	f := NewFactory(log, "label1=something", 60, exclusions, false)
 	ctrl := f.NewController(client, evt, "pod")
 
 	// this will trigger a deletion event

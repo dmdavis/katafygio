@@ -30,6 +30,7 @@ var (
 	exclobj        []string
 	noGit          bool
 	noOwnerRef     bool
+	unabridged     bool
 )
 
 func bindPFlag(key string, cmd string) {
@@ -84,7 +85,7 @@ func init() {
 	RootCmd.PersistentFlags().DurationVarP(&gitTimeout, "git-timeout", "t", 300*time.Second, "Git operations timeout")
 	bindPFlag("git-timeout", "git-timeout")
 
-	RootCmd.PersistentFlags().StringSliceVarP(&exclkind, "exclude-kind", "x", nil, "Ressource kind to exclude. Eg. 'deployment'")
+	RootCmd.PersistentFlags().StringSliceVarP(&exclkind, "exclude-kind", "x", nil, "Resource kind to exclude. Eg. 'deployment'")
 	bindPFlag("exclude-kind", "exclude-kind")
 
 	RootCmd.PersistentFlags().StringSliceVarP(&exclobj, "exclude-object", "y", nil, "Object to exclude. Eg. 'configmap:kube-system/kube-dns'")
@@ -104,6 +105,9 @@ func init() {
 
 	RootCmd.PersistentFlags().BoolVarP(&noGit, "no-git", "n", false, "Don't version with git")
 	bindPFlag("no-git", "no-git")
+
+	RootCmd.PersistentFlags().BoolVarP(&unabridged, "unabridged", "u", false, "Include status attribute")
+	bindPFlag("unabridged", "unabridged")
 }
 
 // for whatever the reason, viper don't auto bind values from config file so we have to tell him
@@ -128,4 +132,5 @@ func bindConf(cmd *cobra.Command, args []string) {
 	exclobj = viper.GetStringSlice("exclude-object")
 	noGit = viper.GetBool("no-git")
 	noOwnerRef = viper.GetBool("exclude-having-owner-ref")
+	unabridged = viper.GetBool("unabridged")
 }
